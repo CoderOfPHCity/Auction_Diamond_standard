@@ -92,9 +92,8 @@ contract DiamondDeployer is Test, IDiamondCut {
         B = mkaddr("bidder b");
 
 
-               //call a function
         DiamondLoupeFacet(address(diamond)).facetAddresses();
-        _auction.CreateAuction(address(this), 0, 100);
+        _auction.CreateAuction(A, 0, 10);
        _auction.startBidding();
        vm.stopPrank();
     }
@@ -103,10 +102,10 @@ contract DiamondDeployer is Test, IDiamondCut {
     function testBid() public {
        
        switchSigner(A);
-       _auction.bid(1, 100);
+       _auction.bid(0, 100);
         vm.stopPrank();
         switchSigner(B);
-       _auction.bid(1, 20);
+       _auction.bid(0, 200);
 
         //    bytes32 value = vm.load(
         //     address(diamond),

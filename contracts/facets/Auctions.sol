@@ -100,15 +100,15 @@ contract Auctions {
         uint256 lastInteractedAmount = (_totalFee *
             Auction.LAST_INTERACTED_PERCENT) / 100;
 
-        // ERC20Token.transferFrom(from, to, amount);
-        IERC20(ds.tokenAddress).transfer(Auction.BURN_ADDRESS, burnAmount);
-        IERC20(ds.tokenAddress).transfer(Auction.RANDOM_DAO_ADDRESS, daoAmount);
-        IERC20(ds.tokenAddress).transfer(Auction.OUTBID_ADDRESS, outbidAmount);
-        IERC20(ds.tokenAddress).transfer(
-            Auction.TEAM_WALLET_ADDRESS,
+
+
+        Auction._transferFrom(address(this), Auction.BURN_ADDRESS, burnAmount);
+        Auction._transferFrom(address(this), Auction.RANDOM_DAO_ADDRESS, daoAmount);
+        Auction._transferFrom(address(this), Auction.OUTBID_ADDRESS, outbidAmount);
+        Auction._transferFrom(address(this), Auction.TEAM_WALLET_ADDRESS,
             teamAmount
         );
-        IERC20(ds.tokenAddress).transfer(
+        Auction._transferFrom(address(this), 
             Auction.LAST_INTERACTED_ADDRESS,
             lastInteractedAmount
         );
