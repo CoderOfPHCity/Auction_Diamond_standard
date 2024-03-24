@@ -9,8 +9,11 @@ import "../contracts/Diamond.sol";
 import "../contracts/facets/Auctions.sol";
 import "../contracts/facets/AUCFacet.sol";
 import "../contracts/DANIELNFT.sol";
+import "../contracts/libraries/AppStorage.sol";
+import "../lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol";
 
 contract DiamondDeployer is Test, IDiamondCut {
+    Auction.AuctionStorage internal ds;
     //contract types of facets to be deployed
     Diamond diamond;
     DiamondCutFacet dCutFacet;
@@ -34,7 +37,7 @@ contract DiamondDeployer is Test, IDiamondCut {
         ownerF = new OwnershipFacet();
         auctionF = new AUCFacet();
         auction = new Auctions();
-         nft = new DANIELNFT(address(diamond));
+         nft = new DANIELNFT();
 
   
 
@@ -99,26 +102,42 @@ contract DiamondDeployer is Test, IDiamondCut {
     }
 
 
-    function testBid() public {
-    
-    
+    function testCreatebid() public {
         vm.expectRevert("No zero address call");
-        _auction.CreateAuction(address(0), 1, 10);
+        _auction.CreateAuction(address(0), 0, 10);
     }
-       
-    //    switchSigner(A);s
-    //    _auction.bid(0, 100);
-    //     vm.stopPrank();
-    //     switchSigner(B);
-    //    _auction.bid(0, 200);
 
-        //    bytes32 value = vm.load(
-        //     address(diamond),
-        //     bytes32(abi.encodePacked(uint256(2)))
-        // );
-        // uint256 decodevalue = abi.decode(abi.encodePacked(value), (uint256));
-        // console.log(decodevalue);
-    
+
+       function testMint() public {
+        switchSigner(A);
+         nft.safeMint(A, 1);
+        switchSigner(B);
+         vm.expectRevert();
+        _auction.CreateAuction(address(nft),0, 1);
+     }
+
+        function testbiddertoken() public {
+          switchSigner(A);
+        vm.expectRevert("You dont have enough AUCTokens");
+        _auction.bid(1, 10);
+    }
+
+    function testStatus() public {
+
+    }
+         function testAuctionStateChange() public {
+
+
+        switchSigner(A);
+        nft.safeMint(A, 1);
+        nft.approve(address(diamond), 1);
+       _auction.CreateAuction(address(nft), 0, 1);
+        Auction.AuctionDetails storage auc = ds.OwnerAuctionItem[msg.sender];
+         assertEq(auc.status, true);
+//         assertEq(auc.owner, A);
+//         assertEq(auc.isSettled, false);
+//         assertEq(auc.nftContractAddress, address(erc721Token));
+    }
 
 
 

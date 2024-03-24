@@ -60,13 +60,9 @@ contract Auctions {
     }
 
     function bid(uint auctionID_, uint _amount) public {
-        require(
-            hasEnoughTokens(msg.sender, _amount) == true,
-            "You dont have enough AUCTokens"
-        );
         Auction.AuctionDetails storage id_ = ds.OwnerAuctionItem[msg.sender];
         uint256 balance = ds.balances[msg.sender];
-        require(balance >= _amount, "NotEnough AUCtokens");
+        require(balance >= _amount, "You dont have enough AUCTokens");
         Auction.NFTSToAuction storage _a = ds.TobeAuctioned[auctionID_];
         uint _highestbid = _a.highestBid;
         _highestbid = balance;
@@ -173,10 +169,4 @@ contract Auctions {
         }
     }
 
-    function hasEnoughTokens(
-        address bidder,
-        uint256 amount
-    ) internal view returns (bool) {
-        return IERC20(ds.tokenAddress).balanceOf(bidder) >= amount;
-    }
 }
