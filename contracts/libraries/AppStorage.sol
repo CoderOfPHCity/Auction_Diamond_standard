@@ -5,18 +5,9 @@ import {IERC721} from "../../lib/openzeppelin-contracts/contracts/token/ERC721/I
 import {IERC1155} from "../../lib/openzeppelin-contracts/contracts/token/ERC1155/IERC1155.sol";
 
 
-
-
-
-// NFT auctions work by selling non-fungible art on an online marketplace using cryptocurrency. 
-// The seller sets a minimum price for the NFT, and 
-// interested buyers can submit their bids during a specific timeframe.
 library Auction{
     event Transfer(address indexed _from, address indexed _to, uint256 _value);
 
-
-     // Constants for fee distribution
-    // uint constant  FEE_PERCENT_TO_TOTAL = 10; // 10% of highestBid == totalFee
     uint constant BURN_PERCENT = 2; // 2% of totalFee is burned
     uint constant DAO_PERCENT = 2; // 2% of totalFee is sent to a random DAO address
     uint constant OUTBID_PERCENT = 3; // 3% goes back to the outbid bidder

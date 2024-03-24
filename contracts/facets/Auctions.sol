@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 import {IERC721} from "../../lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol";
 import {IERC1155} from "../../lib/openzeppelin-contracts/contracts/token/ERC1155/IERC1155.sol";
 import {IERC20} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-import { LibDiamond } from "../libraries/LibDiamond.sol";
+import {LibDiamond} from "../libraries/LibDiamond.sol";
 import {Auction} from "../libraries/AppStorage.sol";
 
 contract Auctions {
@@ -15,7 +15,6 @@ contract Auctions {
         uint tokenID,
         uint price
     ) public {
-
         ds.auctionItemiD++;
         uint256 itemIds = ds.auctionItemiD;
         Auction.AuctionDetails storage _b = ds.OwnerAuctionItem[msg.sender];
@@ -29,7 +28,6 @@ contract Auctions {
         _a.tokenID = tokenID;
         ds.seller[itemIds] = msg.sender;
         if (isERC721(_b.contractAddress)) {
-
             require(isERC721(contractAddress), "Not an ERC721 contract");
 
             IERC721(contractAddress).transferFrom(
@@ -38,7 +36,6 @@ contract Auctions {
                 tokenID
             );
         } else {
-
             require(!isERC721(contractAddress), "Not an ERC1155 contract");
             IERC1155(contractAddress).safeTransferFrom(
                 msg.sender,
@@ -52,18 +49,22 @@ contract Auctions {
 
     function startBidding() public {
         address owner_ = LibDiamond.contractOwner();
-    require(msg.sender == owner_, "You are not the owner");
+        require(msg.sender == owner_, "You are not the owner");
         Auction.AuctionDetails storage _id = ds.OwnerAuctionItem[msg.sender];
         _id.status = true;
     }
-function getSeller(uint id) public view returns(address _seller){
+
+    function getSeller(uint id) public view returns (address _seller) {
         _seller = ds.seller[id];
     }
 
-function bid(uint auctionID_ ,uint _amount) public {
-    require(hasEnoughTokens(msg.sender, _amount) == true, "You dont have enough AUCTokens");
+    function bid(uint auctionID_, uint _amount) public {
+        require(
+            hasEnoughTokens(msg.sender, _amount) == true,
+            "You dont have enough AUCTokens"
+        );
         Auction.AuctionDetails storage id_ = ds.OwnerAuctionItem[msg.sender];
-         uint256 balance = ds.balances[msg.sender];
+        uint256 balance = ds.balances[msg.sender];
         require(balance >= _amount, "NotEnough AUCtokens");
         Auction.NFTSToAuction storage _a = ds.TobeAuctioned[auctionID_];
         uint _highestbid = _a.highestBid;
@@ -73,21 +74,21 @@ function bid(uint auctionID_ ,uint _amount) public {
         require(balance >= id_.price, "price below auction");
         require(balance != 0, "cannot bid 0");
         require(bidderStatus == 0, "Cannot bid twice");
-        if(_highestbid !=0 && balance > _highestbid){
+        if (_highestbid != 0 && balance > _highestbid) {
             ds.bids[msg.sender][auctionID_] += balance;
             _a.highestBid = balance;
-            _a.highestBidder = msg.sender;    
-        } 
+            _a.highestBidder = msg.sender;
+        }
 
-    uint feeValue = _a.highestBid - calculateTotalFee(_highestbid);
+        uint feeValue = _a.highestBid - calculateTotalFee(_highestbid);
 
-          distributeFees(feeValue);
+        distributeFees(feeValue);
     }
 
-
-    function calculateTotalFee(uint256 _highestBid) internal pure returns (uint256) {
-       return(_highestBid * 90) / 100;
-      
+    function calculateTotalFee(
+        uint256 _highestBid
+    ) internal pure returns (uint256) {
+        return (_highestBid * 90) / 100;
     }
 
     function distributeFees(uint256 _totalFee) internal {
@@ -96,54 +97,61 @@ function bid(uint auctionID_ ,uint _amount) public {
         uint256 daoAmount = (_totalFee * Auction.DAO_PERCENT) / 100;
         uint256 outbidAmount = (_totalFee * Auction.OUTBID_PERCENT) / 100;
         uint256 teamAmount = (_totalFee * Auction.TEAM_PERCENT) / 100;
-        uint256 lastInteractedAmount = (_totalFee * Auction.LAST_INTERACTED_PERCENT) / 100;
-
+        uint256 lastInteractedAmount = (_totalFee *
+            Auction.LAST_INTERACTED_PERCENT) / 100;
 
         // ERC20Token.transferFrom(from, to, amount);
         IERC20(ds.tokenAddress).transfer(Auction.BURN_ADDRESS, burnAmount);
         IERC20(ds.tokenAddress).transfer(Auction.RANDOM_DAO_ADDRESS, daoAmount);
         IERC20(ds.tokenAddress).transfer(Auction.OUTBID_ADDRESS, outbidAmount);
-        IERC20(ds.tokenAddress).transfer(Auction.TEAM_WALLET_ADDRESS, teamAmount);
-        IERC20(ds.tokenAddress).transfer(Auction.LAST_INTERACTED_ADDRESS, lastInteractedAmount);
+        IERC20(ds.tokenAddress).transfer(
+            Auction.TEAM_WALLET_ADDRESS,
+            teamAmount
+        );
+        IERC20(ds.tokenAddress).transfer(
+            Auction.LAST_INTERACTED_ADDRESS,
+            lastInteractedAmount
+        );
     }
 
     function settleBid(uint auctionIDm__) public {
-         address owner_ = LibDiamond.contractOwner();
-    require(msg.sender == owner_, "Not authorized");
+        address owner_ = LibDiamond.contractOwner();
+        require(msg.sender == owner_, "Not authorized");
         Auction.NFTSToAuction storage _idm_ = ds.TobeAuctioned[auctionIDm__];
         address _highestBidder_ = _idm_.highestBidder;
-         Auction.AuctionDetails storage id_ = ds.OwnerAuctionItem[msg.sender];
+        Auction.AuctionDetails storage id_ = ds.OwnerAuctionItem[msg.sender];
         require(id_.status == true, "Auction not active");
         id_.status = false;
-
 
         address contractAddress = id_.contractAddress;
         uint nftID = id_.tokenID;
         address _seller = getSeller(auctionIDm__);
         require(_highestBidder_ == address(0), "invalid address!!");
 
-         if (isERC721(contractAddress)) {
-
+        if (isERC721(contractAddress)) {
             require(isERC721(contractAddress), "Not an ERC721 contract");
 
-            IERC721(contractAddress).transferFrom(address(this), _seller, nftID);
-        }
-        else if (!isERC721(contractAddress)) {
-            IERC721(contractAddress).transferFrom(address(this), _highestBidder_, nftID);
-        } 
-        else {
+            IERC721(contractAddress).transferFrom(
+                address(this),
+                _seller,
+                nftID
+            );
+        } else if (!isERC721(contractAddress)) {
+            IERC721(contractAddress).transferFrom(
+                address(this),
+                _highestBidder_,
+                nftID
+            );
+        } else {
             IERC1155(contractAddress).safeTransferFrom(
                 address(this),
                 _highestBidder_,
-                 nftID,
+                nftID,
                 1,
                 ""
             );
         }
-        
     }
-
-
 
     function isERC721(address contractAddress) internal view returns (bool) {
         try IERC721(contractAddress).balanceOf(address(this)) returns (
