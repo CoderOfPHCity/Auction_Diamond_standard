@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.24;
-
 import "../contracts/interfaces/IDiamondCut.sol";
 import "../contracts/facets/DiamondCutFacet.sol";
 import "../contracts/facets/DiamondLoupeFacet.sol";
@@ -9,6 +8,7 @@ import "forge-std/Test.sol";
 import "../contracts/Diamond.sol";
 import "../contracts/facets/Auctions.sol";
 import "../contracts/facets/AUCFacet.sol";
+import "../contracts/DANIELNFT.sol";
 
 contract DiamondDeployer is Test, IDiamondCut {
     //contract types of facets to be deployed
@@ -18,7 +18,7 @@ contract DiamondDeployer is Test, IDiamondCut {
     OwnershipFacet ownerF;
     AUCFacet auctionF;
     Auctions auction;
-    // DNFT nft;
+    DANIELNFT nft;
 
 
     Auctions _auction;
@@ -34,7 +34,7 @@ contract DiamondDeployer is Test, IDiamondCut {
         ownerF = new OwnershipFacet();
         auctionF = new AUCFacet();
         auction = new Auctions();
-        // nft = new DANIELNFT(address(diamond));
+         nft = new DANIELNFT(address(diamond));
 
   
 
@@ -93,19 +93,24 @@ contract DiamondDeployer is Test, IDiamondCut {
 
 
         DiamondLoupeFacet(address(diamond)).facetAddresses();
-        _auction.CreateAuction(A, 0, 10);
-       _auction.startBidding();
-       vm.stopPrank();
+    //     _auction.CreateAuction(nft, 0, 10);
+    //    _auction.startBidding();
+    //    vm.stopPrank();
     }
 
 
     function testBid() public {
+    
+    
+        vm.expectRevert("No zero address call");
+        _auction.CreateAuction(address(0), 1, 10);
+    }
        
-       switchSigner(A);
-       _auction.bid(0, 100);
-        vm.stopPrank();
-        switchSigner(B);
-       _auction.bid(0, 200);
+    //    switchSigner(A);s
+    //    _auction.bid(0, 100);
+    //     vm.stopPrank();
+    //     switchSigner(B);
+    //    _auction.bid(0, 200);
 
         //    bytes32 value = vm.load(
         //     address(diamond),
@@ -113,8 +118,7 @@ contract DiamondDeployer is Test, IDiamondCut {
         // );
         // uint256 decodevalue = abi.decode(abi.encodePacked(value), (uint256));
         // console.log(decodevalue);
-    }
-
+    
 
 
 

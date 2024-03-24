@@ -17,6 +17,7 @@ contract Auctions {
     ) public {
         ds.auctionItemiD++;
         uint256 itemIds = ds.auctionItemiD;
+        require(contractAddress != address(0), "No zero address call");
         Auction.AuctionDetails storage _b = ds.OwnerAuctionItem[msg.sender];
 
         _b.NFTowner = msg.sender;
@@ -100,15 +101,24 @@ contract Auctions {
         uint256 lastInteractedAmount = (_totalFee *
             Auction.LAST_INTERACTED_PERCENT) / 100;
 
-
-
         Auction._transferFrom(address(this), Auction.BURN_ADDRESS, burnAmount);
-        Auction._transferFrom(address(this), Auction.RANDOM_DAO_ADDRESS, daoAmount);
-        Auction._transferFrom(address(this), Auction.OUTBID_ADDRESS, outbidAmount);
-        Auction._transferFrom(address(this), Auction.TEAM_WALLET_ADDRESS,
+        Auction._transferFrom(
+            address(this),
+            Auction.RANDOM_DAO_ADDRESS,
+            daoAmount
+        );
+        Auction._transferFrom(
+            address(this),
+            Auction.OUTBID_ADDRESS,
+            outbidAmount
+        );
+        Auction._transferFrom(
+            address(this),
+            Auction.TEAM_WALLET_ADDRESS,
             teamAmount
         );
-        Auction._transferFrom(address(this), 
+        Auction._transferFrom(
+            address(this),
             Auction.LAST_INTERACTED_ADDRESS,
             lastInteractedAmount
         );
