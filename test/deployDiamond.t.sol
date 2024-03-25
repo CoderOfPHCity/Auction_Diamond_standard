@@ -91,6 +91,7 @@ contract DiamondDeployer is Test, IDiamondCut {
         AUCFacet(address(diamond)).mintTo(B);
 
         _auction = Auctions(address(diamond));
+        auctionF = AUCFacet(address(diamond));
 
 
        
@@ -138,10 +139,18 @@ contract DiamondDeployer is Test, IDiamondCut {
     }
     function testAuctionStateChange() public {
          switchSigner(A);
-             nft.safeMint(A, 1);
-            _auction.CreateAuction(address(nft), 1, 1);
-           IERC721(address(nft)).approve(address(diamond), 1);
-       _auction.bid(1, 10);
+            nft.safeMint(A, 1);
+             IERC721(address(nft)).approve(address(diamond), 1);
+
+               _auction.CreateAuction(address(nft), 1, 20);
+
+            //    _auction.startBidding();
+
+             switchSigner(B);
+             auctionF.approve(address(diamond), 20);
+
+
+        _auction.bid(1, 20);
         // Auction.AuctionDetails storage auc = ds.OwnerAuctionItem[A];
         //  assertEq(auc.status, false);
 //         assertEq(auc.owner, A);

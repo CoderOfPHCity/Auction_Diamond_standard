@@ -19,7 +19,7 @@ contract Auctions {
         uint256 itemIds = ds.auctionItemiD;
         require(contractAddress != address(0), "No zero address call");
         Auction.AuctionDetails storage _b = ds.OwnerAuctionItem[msg.sender];
-
+        // Auction._transferFrom(msg.sender, address(this), price);
         _b.NFTowner = msg.sender;
         _b.tokenID = tokenID;
         _b.price = price;
@@ -28,32 +28,32 @@ contract Auctions {
         _a.AuctionID = itemIds;
         _a.tokenID = tokenID;
         ds.seller[itemIds] = msg.sender;
-        if (isERC721(_b.contractAddress)) {
-            require(isERC721(contractAddress), "Not an ERC721 contract");
+        // if (isERC721(_b.contractAddress)) {
+        //     require(isERC721(contractAddress), "Not an ERC721 contract");
 
             IERC721(contractAddress).transferFrom(
                 msg.sender,
                 address(this),
                 tokenID
             );
-        } else {
-            require(!isERC721(contractAddress), "Not an ERC1155 contract");
-            IERC1155(contractAddress).safeTransferFrom(
-                msg.sender,
-                address(this),
-                tokenID,
-                1,
-                ""
-            );
-        }
+        // } else {
+        //     require(!isERC721(contractAddress), "Not an ERC1155 contract");
+        //     IERC1155(contractAddress).safeTransferFrom(
+        //         msg.sender,
+        //         address(this),
+        //         tokenID,
+        //         1,
+        //         ""
+        //     );
+        // }
     }
 
-    function startBidding() public {
-        address owner_ = LibDiamond.contractOwner();
-        require(msg.sender == owner_, "You are not the owner");
-        Auction.AuctionDetails storage _id = ds.OwnerAuctionItem[msg.sender];
-        _id.status = true;
-    }
+    // function startBidding() public {
+    //     Auction.AuctionDetails storage _b = ds.OwnerAuctionItem[msg.sender];
+    //     address owner_ = _b.NFTowner ;
+    //     require(msg.sender == owner_, "You are not the owner");
+    //     _b.status = true;
+    // }
 
     function getSeller(uint id) public view returns (address _seller) {
         _seller = ds.seller[id];
@@ -63,11 +63,12 @@ contract Auctions {
         Auction.AuctionDetails storage id_ = ds.OwnerAuctionItem[msg.sender];
         uint256 balance = ds.balances[msg.sender];
         require(balance >= _amount, "You dont have enough AUCTokens");
+
         Auction.NFTSToAuction storage _a = ds.TobeAuctioned[auctionID_];
         uint _highestbid = _a.highestBid;
         _highestbid = balance;
         uint bidderStatus = ds.bids[msg.sender][auctionID_];
-        require(id_.status == true, "Auction is not open");
+        // require(id_.status == true, "Auction is not open");
         require(balance >= id_.price, "price below auction");
         require(balance != 0, "cannot bid 0");
         require(bidderStatus == 0, "Cannot bid twice");
@@ -77,7 +78,7 @@ contract Auctions {
             _a.highestBidder = msg.sender;
         }
 
-        uint feeValue = _a.highestBid - calculateTotalFee(_highestbid);
+        uint feeValue = _a.highestBid - calculateTotalFee(_a.highestBid);
 
         distributeFees(feeValue);
     }
