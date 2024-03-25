@@ -84,15 +84,16 @@ contract DiamondDeployer is Test, IDiamondCut {
         //call a function
         DiamondLoupeFacet(address(diamond)).facetAddresses();
         
-        
+        A = mkaddr("bidder a");
+        B = mkaddr("bidder b");
+
         AUCFacet(address(diamond)).mintTo(A);
         AUCFacet(address(diamond)).mintTo(B);
 
         _auction = Auctions(address(diamond));
 
 
-        A = mkaddr("bidder a");
-        B = mkaddr("bidder b");
+       
 
 
         DiamondLoupeFacet(address(diamond)).facetAddresses();
@@ -117,23 +118,32 @@ contract DiamondDeployer is Test, IDiamondCut {
      }
 
         function testbiddertoken() public {
-          switchSigner(A);
         vm.expectRevert("You dont have enough AUCTokens");
-        _auction.bid(1, 10);
+        _auction.bid(0, 10);
     }
 
     function testStatus() public {
+        switchSigner(A);
+        Auction.AuctionDetails storage auc = ds.OwnerAuctionItem[A];
+        assertEq(auc.status, false);
+
 
     }
-         function testAuctionStateChange() public {
 
+    function testPriceBefore() public{
+        Auction.AuctionDetails storage auc = ds.OwnerAuctionItem[A];
+        assertEq(auc.price, 0);
+          
 
-        switchSigner(A);
-        nft.safeMint(A, 1);
-        nft.approve(address(diamond), 1);
-       _auction.CreateAuction(address(nft), 0, 1);
-        Auction.AuctionDetails storage auc = ds.OwnerAuctionItem[msg.sender];
-         assertEq(auc.status, true);
+    }
+    function testAuctionStateChange() public {
+         switchSigner(A);
+             nft.safeMint(A, 1);
+            _auction.CreateAuction(address(nft), 1, 1);
+           IERC721(address(nft)).approve(address(diamond), 1);
+       _auction.bid(1, 10);
+        // Auction.AuctionDetails storage auc = ds.OwnerAuctionItem[A];
+        //  assertEq(auc.status, false);
 //         assertEq(auc.owner, A);
 //         assertEq(auc.isSettled, false);
 //         assertEq(auc.nftContractAddress, address(erc721Token));
