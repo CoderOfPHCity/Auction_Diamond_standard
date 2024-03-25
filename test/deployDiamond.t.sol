@@ -23,11 +23,9 @@ contract DiamondDeployer is Test, IDiamondCut {
     Auctions auction;
     DANIELNFT nft;
 
-
     Auctions _auction;
     address A = address(0xa);
     address B = address(0xb);
-
 
     function setUp() public {
         //deploy facets
@@ -37,9 +35,7 @@ contract DiamondDeployer is Test, IDiamondCut {
         ownerF = new OwnershipFacet();
         auctionF = new AUCFacet();
         auction = new Auctions();
-         nft = new DANIELNFT();
-
-  
+        nft = new DANIELNFT();
 
         //upgrade diamond with facets
 
@@ -62,7 +58,7 @@ contract DiamondDeployer is Test, IDiamondCut {
             })
         );
 
-         cut[2] = (
+        cut[2] = (
             FacetCut({
                 facetAddress: address(auctionF),
                 action: FacetCutAction.Add,
@@ -70,7 +66,7 @@ contract DiamondDeployer is Test, IDiamondCut {
             })
         );
 
-         cut[3] = (
+        cut[3] = (
             FacetCut({
                 facetAddress: address(auction),
                 action: FacetCutAction.Add,
@@ -83,7 +79,7 @@ contract DiamondDeployer is Test, IDiamondCut {
 
         //call a function
         DiamondLoupeFacet(address(diamond)).facetAddresses();
-        
+
         A = mkaddr("bidder a");
         B = mkaddr("bidder b");
 
@@ -93,29 +89,23 @@ contract DiamondDeployer is Test, IDiamondCut {
         _auction = Auctions(address(diamond));
         auctionF = AUCFacet(address(diamond));
 
-
-       
-
-
         DiamondLoupeFacet(address(diamond)).facetAddresses();
     }
-
 
     function testCreatebid() public {
         vm.expectRevert("No zero address call");
         _auction.CreateAuction(address(0), 0, 10);
     }
 
-
-       function testMint() public {
+    function testMint() public {
         switchSigner(A);
-         nft.safeMint(A, 1);
+        nft.safeMint(A, 1);
         switchSigner(B);
-         vm.expectRevert();
-        _auction.CreateAuction(address(nft),0, 1);
-     }
+        vm.expectRevert();
+        _auction.CreateAuction(address(nft), 0, 1);
+    }
 
-        function testbiddertoken() public {
+    function testbiddertoken() public {
         vm.expectRevert("You dont have enough AUCTokens");
         _auction.bid(0, 10);
     }
@@ -124,36 +114,65 @@ contract DiamondDeployer is Test, IDiamondCut {
         switchSigner(A);
         Auction.AuctionDetails storage auc = ds.OwnerAuctionItem[A];
         assertEq(auc.status, false);
-
-
     }
 
-    function testPriceBefore() public{
+    function testPriceBefore() public {
         Auction.AuctionDetails storage auc = ds.OwnerAuctionItem[A];
         assertEq(auc.price, 0);
-          
-
     }
-    function testCreateAuction() public {
-         switchSigner(A);
-            nft.safeMint(A, 1);
-             IERC721(address(nft)).approve(address(diamond), 1);
-               _auction.CreateAuction(address(nft), 1, 20);
-    
 
-             switchSigner(B);
-             auctionF.approve(address(diamond), 20);
+    function testCreateAuctionaAndBid() public {
+        switchSigner(A);
+        nft.safeMint(A, 1);
+        IERC721(address(nft)).approve(address(diamond), 1);
+        _auction.CreateAuction(address(nft), 1, 20);
 
+        switchSigner(B);
+        auctionF.approve(address(diamond), 20);
 
         _auction.bid(1, 20);
-        // Auction.AuctionDetails storage auc = ds.OwnerAuctionItem[A];
-        //  assertEq(auc.status, false);
-//         assertEq(auc.owner, A);
-//         assertEq(auc.isSettled, false);
-//         assertEq(auc.nftContractAddress, address(erc721Token));
     }
 
+    function testSellerIsNFTOwner() public {
+        switchSigner(A);
+        nft.safeMint(A, 1);
+        IERC721(address(nft)).approve(address(diamond), 1);
+        _auction.CreateAuction(address(nft), 1, 20);
+        Auction.AuctionDetails storage auc = ds.OwnerAuctionItem[A];
+        assertEq(auc.NFTowner, _auction.getSeller(0));
+    }
 
+    function testbidderCantTwice() public {
+        switchSigner(A);
+        nft.safeMint(A, 1);
+        IERC721(address(nft)).approve(address(diamond), 1);
+        _auction.CreateAuction(address(nft), 1, 20);
+        switchSigner(B);
+        auctionF.approve(address(diamond), 20);
+
+        _auction.bid(1, 20);
+        assertEq(0, ds.bids[B][1]);
+    }
+
+    function testHighestBidder() public {
+        switchSigner(A);
+        nft.safeMint(A, 1);
+        IERC721(address(nft)).approve(address(diamond), 1);
+        _auction.CreateAuction(address(nft), 1, 20);
+        switchSigner(B);
+        auctionF.approve(address(diamond), 20);
+
+        _auction.bid(1, 20);
+        Auction.NFTSToAuction storage n = ds.TobeAuctioned[1];
+
+        assertEq(n.highestBidder, address(0));
+    }
+
+    function testContractAddress() public {
+        Auction.AuctionDetails storage auc = ds.OwnerAuctionItem[address(nft)];
+          assertEq(auc.tokenID, 0);
+
+    }
 
     function generateSelectors(
         string memory _facetName
@@ -166,7 +185,7 @@ contract DiamondDeployer is Test, IDiamondCut {
         selectors = abi.decode(res, (bytes4[]));
     }
 
-        function mkaddr(string memory name) public returns (address) {
+    function mkaddr(string memory name) public returns (address) {
         address addr = address(
             uint160(uint256(keccak256(abi.encodePacked(name))))
         );
@@ -174,7 +193,7 @@ contract DiamondDeployer is Test, IDiamondCut {
         return addr;
     }
 
-      function switchSigner(address _newSigner) public {
+    function switchSigner(address _newSigner) public {
         address foundrySigner = 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38;
         if (msg.sender == foundrySigner) {
             vm.startPrank(_newSigner);
@@ -182,7 +201,6 @@ contract DiamondDeployer is Test, IDiamondCut {
             vm.stopPrank();
             vm.startPrank(_newSigner);
         }
-
     }
 
     function diamondCut(

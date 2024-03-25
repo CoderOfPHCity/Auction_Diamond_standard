@@ -25,8 +25,6 @@ library Auction {
         0x3333333333333333333333333333333333333333;
 
     struct AuctionDetails {
-        // IERC721 contractAddress721;
-        // IERC1155 contractAddress1155;
         address contractAddress;
         address NFTowner;
         uint tokenID;
