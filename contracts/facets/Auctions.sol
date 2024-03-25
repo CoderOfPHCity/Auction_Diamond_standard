@@ -28,32 +28,32 @@ contract Auctions {
         _a.AuctionID = itemIds;
         _a.tokenID = tokenID;
         ds.seller[itemIds] = msg.sender;
-        // if (isERC721(_b.contractAddress)) {
-        //     require(isERC721(contractAddress), "Not an ERC721 contract");
+        if (isERC721(contractAddress)) {
+            require(isERC721(contractAddress), "Not an ERC721 contract");
 
             IERC721(contractAddress).transferFrom(
                 msg.sender,
                 address(this),
                 tokenID
+            );}
+         else {
+             require(!isERC721(contractAddress), "Not an ERC1155 contract");
+            IERC1155(contractAddress).safeTransferFrom(
+                msg.sender,
+                address(this),
+                tokenID,
+                1,
+                ""
             );
-        // } else {
-        //     require(!isERC721(contractAddress), "Not an ERC1155 contract");
-        //     IERC1155(contractAddress).safeTransferFrom(
-        //         msg.sender,
-        //         address(this),
-        //         tokenID,
-        //         1,
-        //         ""
-        //     );
-        // }
+        }
     }
 
-    // function startBidding() public {
-    //     Auction.AuctionDetails storage _b = ds.OwnerAuctionItem[msg.sender];
-    //     address owner_ = _b.NFTowner ;
-    //     require(msg.sender == owner_, "You are not the owner");
-    //     _b.status = true;
-    // }
+    function startBidding() public {
+        Auction.AuctionDetails storage _b = ds.OwnerAuctionItem[msg.sender];
+        address owner_ = _b.NFTowner ;
+        require(msg.sender == owner_, "You are not the owner");
+        _b.status = true;
+    }
 
     function getSeller(uint id) public view returns (address _seller) {
         _seller = ds.seller[id];
