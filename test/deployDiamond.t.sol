@@ -154,7 +154,7 @@ contract DiamondDeployer is Test, IDiamondCut {
         assertEq(0, ds.bids[B][1]);
     }
 
-    function testHighestBidder() public {
+    function testHighestBidderBeforeBid() public {
         switchSigner(A);
         nft.safeMint(A, 1);
         IERC721(address(nft)).approve(address(diamond), 1);
@@ -168,7 +168,7 @@ contract DiamondDeployer is Test, IDiamondCut {
         assertEq(n.highestBidder, address(0));
     }
 
-    function testContractAddress() public {
+    function testContractID() public {
         Auction.AuctionDetails storage auc = ds.OwnerAuctionItem[address(nft)];
           assertEq(auc.tokenID, 0);
 
