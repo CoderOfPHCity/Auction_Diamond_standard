@@ -98,9 +98,6 @@ contract DiamondDeployer is Test, IDiamondCut {
 
 
         DiamondLoupeFacet(address(diamond)).facetAddresses();
-    //     _auction.CreateAuction(nft, 0, 10);
-    //    _auction.startBidding();
-    //    vm.stopPrank();
     }
 
 
@@ -137,14 +134,12 @@ contract DiamondDeployer is Test, IDiamondCut {
           
 
     }
-    function testAuctionStateChange() public {
+    function testCreateAuction() public {
          switchSigner(A);
             nft.safeMint(A, 1);
              IERC721(address(nft)).approve(address(diamond), 1);
-
                _auction.CreateAuction(address(nft), 1, 20);
-
-            //    _auction.startBidding();
+    
 
              switchSigner(B);
              auctionF.approve(address(diamond), 20);
